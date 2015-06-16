@@ -1,10 +1,42 @@
 <!DOCTYPE html>
 <html>
+<head>
+	<link rel="stylesheet" href="styles.css">
+	<meta charset="UTF-8">
+</head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+
+	
+	function navigationHighliting(el)
+	{
+		
+		
+		$("#navbar>a").removeClass("top_naved");
+		$("#navbar>a").addClass("top_nav");
+		el.removeClass("top_nav");
+		el.addClass("top_naved");
+		
+	
+		 
+	}
+	$("#navbar>a").click(function(){navigationHighliting($(this));});
+	});
+</script>
 <body>
-<a href = "page2.html">
-<h1>CardBoard Box </h1>
+
+<header>  <h1 id = "navbar">  <a href = "jude.html" target="main" class= "top_naved"> Jude Collins </a> 
+					  <a href = "page2.html"  target="main" class= "top_nav"> DEMOS </a>
+					  <a href = "projects.html" target="main"  class= "top_nav"> PROJECTS </a>
+			   </h1>
+ </header>
 </a>
 
-<p>still figuring it out.</p>
+<iframe src ="jude.html" name = "main" id = "main"></iframe>
+
+
 </body>
+
+
 </html>
