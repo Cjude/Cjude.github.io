@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+
+<body>
+	 <input type ="file" id = "audiofile" accept="audio/*" multiple>
+	
+	 
+	 <button type= "button" id = "play">Play</button>
+</body> 
+
+<script type = "text/javascript	">
+	if (! window.AudioContext) {
+        if (! window.webkitAudioContext) {
+            alert('no audiocontext found');
+        }
+        window.AudioContext = window.webkitAudioContext;
+    }
+	document.getElementById("play").onclick = function(){filetourl(document.getElementById("audiofile"))} ;
+    var context = new AudioContext();
+    var audioBuffer;
+    var sourceNode;
+ 
+    // load the sound
+    setupAudioNodes();
+   //loadSound("Imagine Dragons - Warriors (Lyric Video).mp3");
+ 
+    function setupAudioNodes() {
+        // create a buffer source node
+        sourceNode = context.createBufferSource();
+        // and connect to destination
+        sourceNode.connect(context.destination);
+    }
+ 
+    // load the specified sound
+	function filetourl(element)
+	{
+		var file = element.files;
+		var reader = new FileReader();
+		reader.onload = function(){context.decodeAudioData(reader.result,function(buffer){playSound(buffer);},onError);}
+		reader.readAsArrayBuffer(file[0]);
+	}
+    
+ 
+ 
+    function playSound(buffer) {
+        sourceNode.buffer = buffer;
+        sourceNode.start(0);
+    }
+ 
+    // log if an error occurs
+    function onError(e) {
+        console.log(e);
+		
+    }
+	
+</script>
+
+</html>
+
+
