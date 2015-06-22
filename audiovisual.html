@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <html>
-
+<style>
+	.buttons
+	{
+		float: top;
+	}
+</style>
 
 <body>
-	 <input type ="file" id = "audiofile" accept="audio/*" multiple>
+	 <input type ="file" class = "buttons" id = "audiofile" accept="audio/*" multiple>
 	
 	 
-	 <button type= "button" id = "play">Play</button>
+	 <button type= "button" class = "buttons"id = "play">Play</button>
+	 
+	 
+	 
+	 <canvas id="myCanvas" ></canvas>
+	 
+	 
 </body> 
 
 <script type = "text/javascript	">
@@ -16,37 +27,102 @@
         }
         window.AudioContext = window.webkitAudioContext;
     }
-	document.getElementById("play").onclick = function(){filetourl(document.getElementById("audiofile"))} ;
+	var c = document.getElementById("myCanvas");
+	var ctx = c.getContext("2d");
+
+	document.getElementById("play").onclick = function(){filetourl(document.getElementById("audiofile"));} ;
     var context = new AudioContext();
     var audioBuffer;
     var sourceNode;
- 
-    // load the sound
-    setupAudioNodes();
-   //loadSound("Imagine Dragons - Warriors (Lyric Video).mp3");
+	
+	var played = 0;	
+	function getAverageVolume(array){
+			var values = 0;
+			var average;
+			 var length = array.length;
+			 
+			for(var i = 0; i < length; i++)
+					{values += array[i];}
+			
+			average = values/length;
+			return average;}
+	
+		
+
+  
+  
+  
  
     function setupAudioNodes() {
-        // create a buffer source node
-        sourceNode = context.createBufferSource();
-        // and connect to destination
-        sourceNode.connect(context.destination);
+        
+        sourceNode = context.createBufferSource();// create a buffer source node
+		sourceNode.onended = function(){
+			played = 0;}
+		splitter = context.createChannelSplitter();
+		
+		analyser = context.createAnalyser(); // analyser provides acess to audio data
+		analyser.smoothingTimeConstant = 0.3; //make data less jitery
+		analyser.fftSize = 1024; // number of buckets containing frequency information
+		
+		analyser2 = context.createAnalyser(); // analyser provides acess to audio data
+		analyser2.smoothingTimeConstant = 0.0; //make data less jitery? why is this 0.0 check difference
+		analyser2.fftSize = 1024; // number of buckets containing frequency information
+		
+		javascriptNode = context.createScriptProcessor(2048,1,1);//these creates new data 21 times a second for a audio sampled at 44.1k.
+		javascriptNode.onaudioprocess = function(){
+			var array = new Uint8Array(analyser.frequencyBinCount);
+			analyser.getByteFrequencyData(array);
+			var average = getAverageVolume(array);
+			
+			var array2 = new Uint8Array(analyser2.frequencyBinCount);
+			analyser2.getByteFrequencyData(array);
+			var average2 = getAverageVolume(array);
+			
+			ctx.clearRect(0,0,60,130);
+			var grd = ctx.createLinearGradient(0,0,200,0);
+			ctx.fillstyle = grd;
+			ctx.fillRect(0,130-average,25,130);
+			ctx.fillRect(30,130-average2,25,130);}
+		
+		sourceNode.connect(context.destination);    // and connect to destination
+		sourceNode.connect(splitter);
+		splitter.connect(analyser,0,0);
+		splitter.connect(analyser2,1,0);
+		analyser.connect(javascriptNode);
+		javascriptNode.connect(context.destination);
+		
+		
+		
+		
     }
  
     // load the specified sound
 	function filetourl(element)
 	{
+		if(played == 0){
+ 		setupAudioNodes(); 
 		var file = element.files;
 		var reader = new FileReader();
 		reader.onload = function(){context.decodeAudioData(reader.result,function(buffer){playSound(buffer);},onError);}
-		reader.readAsArrayBuffer(file[0]);
+		reader.readAsArrayBuffer(file[0]);}
+		else{
+			stopSound();
+		}
+		
 	}
     
  
- 
+
     function playSound(buffer) {
-        sourceNode.buffer = buffer;
-        sourceNode.start(0);
+		
+			played = 1;
+			sourceNode.buffer = buffer;
+			sourceNode.start(0);
     }
+	function stopSound(){
+		played = 0;
+		sourceNode.stop(0);
+	}
  
     // log if an error occurs
     function onError(e) {
